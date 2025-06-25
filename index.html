@@ -97,6 +97,17 @@ function filterData() {
     `;
   }).join('');
 }
+  tbody.innerHTML = filtered.map(row => {
+  const remainingClass = row.Remaining < 0 ? 'negative' : 'positive';
+  return `
+    <tr>
+      <td data-label="Outlet Code & Name">${row["Outlet Code"]} - ${row["Outlet Name"]}</td>
+      <td data-label="Target">${row.Target}</td>
+      <td data-label="MTD Sale">${row.MTD_Sale}</td>
+      <td data-label="Remaining" class="${remainingClass}">${row.Remaining}</td>
+    </tr>
+  `;
+}).join('');
 </script>
 
 </body>
