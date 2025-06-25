@@ -110,6 +110,14 @@ function filterData() {
     </tr>
   `;
 }).join('');
+  // ✅ Destroy previous DataTable if exists
+  if ($.fn.DataTable.isDataTable('#dataTable')) {
+    $('#dataTable').DataTable().destroy();
+  }
+
+  // ✅ Re-initialize after inserting rows
+  $('#dataTable').DataTable();
+}
 </script>
 <!-- jQuery + DataTables JS -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
