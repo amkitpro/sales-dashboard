@@ -69,7 +69,7 @@ function loadRoutes() {
   const selectedDist = document.getElementById('distributionSelect').value;
   const routeSelect = document.getElementById('routeSelect');
   const filtered = data.filter(d => d.Distribution === selectedDist);
-  const uniqueRoutes = [...new Set(filtered.map(d => d.Route))];
+  const uniqueRoutes = [...new Set(filtered.map(d => d.Route Title))];
   routeSelect.innerHTML = '<option value="">Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
   filterData();
 }
@@ -82,7 +82,7 @@ function filterData() {
 
   const filtered = data.filter(d =>
     (!dist || d.Distribution === dist) &&
-    (!route || d.Route === route) &&
+    (!route || d.Route Title === route) &&
     d[day] == 1 &&
     (!search || d.Outlet.toLowerCase().includes(search))
   );
