@@ -5,7 +5,7 @@
   <style>
     body { font-family: Arial; padding: 20px; }
     label { margin-right: 10px; }
-    select, input { margin: 5px; padding: 5px; }
+    select, input, button { margin: 5px; padding: 5px; }
     table { margin-top: 20px; border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f2f2f2; }
@@ -21,21 +21,20 @@
 <select id="distributionSelect" onchange="loadRoutes()"></select>
 
 <label>Route:</label>
-<select id="routeSelect" onchange="filterData()"></select>
+<select id="routeSelect"></select>
 
 <label>Day:</label>
-<select id="daySelect" onchange="filterData()">
-  <option value="Monday">Monday</option>
-  <option value="Tuesday">Tuesday</option>
-  <option value="Wednesday">Wednesday</option>
-  <option value="Thursday">Thursday</option>
-  <option value="Friday">Friday</option>
-  <option value="Saturday">Saturday</option>
-  <option value="Sunday">Sunday</option>
+<select id="daySelect">
+  <option value="Mon">Monday</option>
+  <option value="Tue">Tuesday</option>
+  <option value="Wed">Wednesday</option>
+  <option value="Thu">Thursday</option>
+  <option value="Fri">Friday</option>
+  <option value="Sat">Saturday</option>
+  <option value="Sun">Sunday</option>
 </select>
 
-<label>Search Outlet:</label>
-<input type="text" id="searchInput" placeholder="Enter outlet name" oninput="filterData()">
+<button onclick="filterData()">Generate</button>
 
 <table id="dataTable">
   <thead>
@@ -71,20 +70,22 @@ function loadRoutes() {
   const filtered = data.filter(d => d.Distribution === selectedDist);
   const uniqueRoutes = [...new Set(filtered.map(d => d["Route Title"]))];
   routeSelect.innerHTML = '<option value="">Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
-  filterData();
 }
 
 function filterData() {
   const dist = document.getElementById('distributionSelect').value;
   const route = document.getElementById('routeSelect').value;
   const day = document.getElementById('daySelect').value;
-  const search = document.getElementById('searchInput').value.toLowerCase();
+
+  if (!dist || !route || !day) {
+    alert("Please select all fields: Distribution, Route, and Day.");
+    return;
+  }
 
   const filtered = data.filter(d =>
-    (!dist || d.Distribution === dist) &&
-    (!route || d["Route Title"] === route) &&
-    d[day] == 1 &&
-    (!search || d.Outlet.toLowerCase().includes(search))
+    d.Distribution === dist &&
+    d["Route Title"] === route &&
+    d[day] == 1
   );
 
   const tbody = document.querySelector('#dataTable tbody');
