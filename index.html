@@ -40,7 +40,7 @@
 <table id="dataTable">
   <thead>
     <tr>
-      <th>Outlet Name</th>
+      <th>Outlet</th>
       <th>Target</th>
       <th>MTD Sale</th>
       <th>Remaining</th>
@@ -69,7 +69,7 @@ function loadRoutes() {
   const selectedDist = document.getElementById('distributionSelect').value;
   const routeSelect = document.getElementById('routeSelect');
   const filtered = data.filter(d => d.Distribution === selectedDist);
-  const uniqueRoutes = [...new Set(filtered.map(d => d.Route Title))];
+  const uniqueRoutes = [...new Set(filtered.map(d => d["Route Title"]))];
   routeSelect.innerHTML = '<option value="">Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
   filterData();
 }
@@ -82,7 +82,7 @@ function filterData() {
 
   const filtered = data.filter(d =>
     (!dist || d.Distribution === dist) &&
-    (!route || d.Route Title === route) &&
+    (!route || d["Route Title"] === route) &&
     d[day] == 1 &&
     (!search || d.Outlet.toLowerCase().includes(search))
   );
@@ -92,7 +92,7 @@ function filterData() {
     const remainingClass = row.Remaining < 0 ? 'negative' : 'positive';
     return `
       <tr>
-        <td>${row.Outlet}</td>
+        <td>${row.OutletCode} – ${row.Outlet}</td>
         <td>${row.Target}</td>
         <td>${row.MTD_Sale}</td>
         <td class="${remainingClass}">${row.Remaining}</td>
