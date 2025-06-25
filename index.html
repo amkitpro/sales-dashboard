@@ -2,168 +2,137 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Outlet Dashboard</title>
+  <title>Outlet Sales Dashboard</title>
 
-  <!-- DataTables CSS -->
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- DataTables & Buttons CSS -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-
-    label, select, button {
-      margin: 0 10px 15px 0;
-    }
-
-    table.dataTable td.negative {
-      color: red;
-    }
-
-    table.dataTable td.positive {
-      color: green;
-    }
-
-    @media (max-width: 768px) {
-      h2 {
-        font-size: 20px;
-      }
-    }
-  </style>
 </head>
 <body>
 
-<h2>Outlet Sales Dashboard</h2>
+  <h2>Outlet Sales Dashboard</h2>
 
-<label>Distribution:</label>
-<select id="distributionSelect" onchange="loadRoutes()"></select>
+  <label>Distribution:</label>
+  <select id="distributionSelect" onchange="loadRoutes()"></select>
 
-<label>Route:</label>
-<select id="routeSelect"></select>
+  <label>Route:</label>
+  <select id="routeSelect"></select>
 
-<label>Day:</label>
-<select id="daySelect">
-  <option value="MON">MON</option>
-  <option value="TUE">TUE</option>
-  <option value="WED">WED</option>
-  <option value="THU">THU</option>
-  <option value="FRI">FRI</option>
-  <option value="SAT">SAT</option>
-  <option value="SUN">SUN</option>
-</select>
+  <label>Day:</label>
+  <select id="daySelect">
+    <option value="MON">MON</option>
+    <option value="TUE">TUE</option>
+    <option value="WED">WED</option>
+    <option value="THU">THU</option>
+    <option value="FRI">FRI</option>
+    <option value="SAT">SAT</option>
+    <option value="SUN">SUN</option>
+  </select>
 
-<button onclick="filterData()">OK</button>
+  <button onclick="filterData()">OK</button>
 
-<table id="dataTable" class="display nowrap" style="width:100%">
-  <thead>
-    <tr>
-      <th>Outlet</th>
-      <th>Target</th>
-      <th>MTD Sale</th>
-      <th>Remaining</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<!-- jQuery + DataTables -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.colVis.min.js"></script>
-
-<script>
-let data = [];
-
-fetch('data.json')
-  .then(response => response.json())
-  .then(json => {
-    data = json;
-    loadDistributions();
-  });
-
-function loadDistributions() {
-  const distSelect = document.getElementById('distributionSelect');
-  const uniqueDists = [...new Set(data.map(d => d.Distribution))];
-  distSelect.innerHTML = '<option value="">Select</option>' + uniqueDists.map(d => `<option>${d}</option>`).join('');
-}
-
-function loadRoutes() {
-  const selectedDist = document.getElementById('distributionSelect').value;
-  const routeSelect = document.getElementById('routeSelect');
-  const filtered = data.filter(d => d.Distribution === selectedDist);
-  const uniqueRoutes = [...new Set(filtered.map(d => d["Route Title"]))];
-  routeSelect.innerHTML = '<option value="">Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
-}
-
-function filterData() {
-  const dist = document.getElementById('distributionSelect').value;
-  const route = document.getElementById('routeSelect').value;
-  const day = document.getElementById('daySelect').value;
-
-  if (!dist || !route || !day) {
-    alert("Please select distribution, route, and day.");
-    return;
-  }
-
-  const filtered = data.filter(d =>
-    d.Distribution === dist &&
-    d["Route Title"] === route &&
-    d[day] == 1
-  );
-
-  const tbody = document.querySelector('#dataTable tbody');
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4">No data found.</td></tr>`;
-    if ($.fn.DataTable.isDataTable('#dataTable')) {
-      $('#dataTable').DataTable().clear().draw();
-    }
-    return;
-  }
-
-  tbody.innerHTML = filtered.map(row => {
-    const remainingClass = row.Remaining < 0 ? 'negative' : 'positive';
-    return `
+  <table id="dataTable" class="display nowrap" style="width:100%">
+    <thead>
       <tr>
-        <td>${row["Outlet Code"]} - ${row["Outlet Name"]}</td>
-        <td>${row.Target}</td>
-        <td>${row["MTD Sale"]}</td>
-        <td class="${remainingClass}">${row.Remaining}</td>
+        <th>Outlet</th>
+        <th>Target</th>
+        <th>MTD Sale</th>
+        <th>Remaining</th>
       </tr>
-    `;
-  }).join('');
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  // Re-initialize DataTable
-  if ($.fn.DataTable.isDataTable('#dataTable')) {
-    $('#dataTable').DataTable().destroy();
-  }
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 
-  $('#dataTable').DataTable({
-    responsive: true,
-    dom: 'Bfrtip',
-    buttons: [
-      'copyHtml5',
-      'csvHtml5',
-      'excelHtml5',
-      'pdfHtml5',
-      'print'
-    ],
-    pageLength: 10
-  });
-}
-</script>
+  <!-- DataTables Export Buttons -->
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
 
+  <script>
+    let data = [];
+
+    fetch('data.json')
+      .then(response => response.json())
+      .then(json => {
+        data = json;
+        loadDistributions();
+      });
+
+    function loadDistributions() {
+      const distSelect = document.getElementById('distributionSelect');
+      const uniqueDists = [...new Set(data.map(d => d.Distribution))];
+      distSelect.innerHTML = '<option value="">Select</option>' + uniqueDists.map(d => `<option>${d}</option>`).join('');
+    }
+
+    function loadRoutes() {
+      const selectedDist = document.getElementById('distributionSelect').value;
+      const routeSelect = document.getElementById('routeSelect');
+      const filtered = data.filter(d => d.Distribution === selectedDist);
+      const uniqueRoutes = [...new Set(filtered.map(d => d["Route Title"]))];
+      routeSelect.innerHTML = '<option value="">Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
+    }
+
+    function filterData() {
+      const dist = document.getElementById('distributionSelect').value;
+      const route = document.getElementById('routeSelect').value;
+      const day = document.getElementById('daySelect').value;
+
+      if (!dist || !route || !day) {
+        alert("Please select distribution, route, and day.");
+        return;
+      }
+
+      const filtered = data.filter(row =>
+        row.Distribution === dist &&
+        row["Route Title"] === route &&
+        row[day] && Number(row[day]) === 1
+      );
+
+      const tbody = document.querySelector('#dataTable tbody');
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4">No data found.</td></tr>`;
+        if ($.fn.DataTable.isDataTable('#dataTable')) {
+          $('#dataTable').DataTable().clear().draw();
+        }
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(row => {
+        const remainingClass = row.Remaining < 0 ? 'negative' : 'positive';
+        return `
+          <tr>
+            <td>${row["Outlet Code"]} - ${row["Outlet Name"]}</td>
+            <td>${row.Target}</td>
+            <td>${row["MTD Sale"]}</td>
+            <td class="${remainingClass}">${row.Remaining}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if ($.fn.DataTable.isDataTable('#dataTable')) {
+        $('#dataTable').DataTable().destroy();
+      }
+
+      $('#dataTable').DataTable({
+        responsive: true,
+        dom: 'Bfrtip',
+        buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
+        pageLength: 10
+      });
+    }
+  </script>
 </body>
 </html>
