@@ -5,7 +5,7 @@
   <style>
     body { font-family: Arial; padding: 20px; }
     label { margin-right: 10px; }
-    select, input, button { margin: 5px; padding: 5px; }
+    select, button { margin: 5px; padding: 5px; }
     table { margin-top: 20px; border-collapse: collapse; width: 100%; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f2f2f2; }
@@ -25,16 +25,16 @@
 
 <label>Day:</label>
 <select id="daySelect">
-  <option value="Mon">Mon</option>
-  <option value="Tue">Tue</option>
-  <option value="Wed">Wed</option>
-  <option value="Thu">Thu</option>
-  <option value="Fri">Fri</option>
-  <option value="Sat">Sat</option>
-  <option value="Sun">Sun</option>
+  <option value="MON">Monday</option>
+  <option value="TUE">Tuesday</option>
+  <option value="WED">Wednesday</option>
+  <option value="THU">Thursday</option>
+  <option value="FRI">Friday</option>
+  <option value="SAT">Saturday</option>
+  <option value="SUN">Sunday</option>
 </select>
 
-<button onclick="filterData()">Generate</button>
+<button onclick="filterData()">OK</button>
 
 <table id="dataTable">
   <thead>
@@ -78,7 +78,7 @@ function filterData() {
   const day = document.getElementById('daySelect').value;
 
   if (!dist || !route || !day) {
-    alert("Please select all fields: Distribution, Route, and Day.");
+    alert("Please select distribution, route, and day.");
     return;
   }
 
@@ -89,13 +89,18 @@ function filterData() {
   );
 
   const tbody = document.querySelector('#dataTable tbody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4">No data found.</td></tr>`;
+    return;
+  }
+
   tbody.innerHTML = filtered.map(row => {
     const remainingClass = row.Remaining < 0 ? 'negative' : 'positive';
     return `
       <tr>
-        <td>${row.OutletCode} – ${row.Outlet}</td>
+        <td>${row["Outlet Code"]} - ${row["Outlet Name"]}</td>
         <td>${row.Target}</td>
-        <td>${row.MTD_Sale}</td>
+        <td>${row["MTD Sale"]}</td>
         <td class="${remainingClass}">${row.Remaining}</td>
       </tr>
     `;
