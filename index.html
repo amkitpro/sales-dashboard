@@ -1,72 +1,105 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Distribution Dashboard</title>
+  <title>Outlet Dashboard</title>
   <style>
     body { font-family: Arial; padding: 20px; }
-    select, table { margin-top: 10px; }
-    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+    label { margin-right: 10px; }
+    select, input { margin: 5px; padding: 5px; }
+    table { margin-top: 20px; border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    .negative { background-color: #ffdddd; color: red; }
+    .positive { background-color: #ddffdd; color: green; }
   </style>
 </head>
 <body>
 
-<h2>Outlet Sales Viewer</h2>
+<h2>Outlet Sales Dashboard</h2>
 
-<label>Select Distribution:</label>
+<label>Distribution:</label>
 <select id="distributionSelect" onchange="loadRoutes()"></select>
 
-<br>
-<label>Select Route:</label>
-<select id="routeSelect" onchange="showTable()"></select>
+<label>Route:</label>
+<select id="routeSelect" onchange="filterData()"></select>
 
-<br><br>
+<label>Day:</label>
+<select id="daySelect" onchange="filterData()">
+  <option value="Monday">Monday</option>
+  <option value="Tuesday">Tuesday</option>
+  <option value="Wednesday">Wednesday</option>
+  <option value="Thursday">Thursday</option>
+  <option value="Friday">Friday</option>
+  <option value="Saturday">Saturday</option>
+  <option value="Sunday">Sunday</option>
+</select>
+
+<label>Search Outlet:</label>
+<input type="text" id="searchInput" placeholder="Enter outlet name" oninput="filterData()">
+
 <table id="dataTable">
   <thead>
     <tr>
-      <th>Outlet Name</th><th>Target</th><th>MTD Sale</th><th>Remaining</th>
+      <th>Outlet Name</th>
+      <th>Target</th>
+      <th>MTD Sale</th>
+      <th>Remaining</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
 
 <script>
-const data = [
-  { Distribution: "DELIGHT DISTRIBUTOR GUJJAR", Route: "BEWAL", Outlet: "AHMED BAKERY", Target: 6, MTD_Sale: 0, Remaining: -6 },
-  { Distribution: "DELIGHT DISTRIBUTOR GUJJAR", Route: "BEWAL", Outlet: "WARIS KARYANA STORE", Target: 12, MTD_Sale: 0, Remaining: -12 },
-  { Distribution: "DELIGHT DISTRIBUTOR GUJJAR", Route: "SARWAR SHAHEED ROAD-2", Outlet: "ZAFAR GENERAL STORE", Target: 12, MTD_Sale: 6, Remaining: -6 }
-  // Add all data here
-];
+let data = [];
+
+fetch('data.json')
+  .then(response => response.json())
+  .then(json => {
+    data = json;
+    loadDistributions();
+  });
 
 function loadDistributions() {
-  const uniqueDistributions = [...new Set(data.map(d => d.Distribution))];
-  const select = document.getElementById('distributionSelect');
-  select.innerHTML = '<option>Select</option>' + uniqueDistributions.map(d => `<option>${d}</option>`).join('');
+  const distSelect = document.getElementById('distributionSelect');
+  const uniqueDists = [...new Set(data.map(d => d.Distribution))];
+  distSelect.innerHTML = '<option value="">Select</option>' + uniqueDists.map(d => `<option>${d}</option>`).join('');
 }
 
 function loadRoutes() {
   const selectedDist = document.getElementById('distributionSelect').value;
   const routeSelect = document.getElementById('routeSelect');
-  const filteredRoutes = data.filter(d => d.Distribution === selectedDist);
-  const uniqueRoutes = [...new Set(filteredRoutes.map(d => d.Route))];
-  routeSelect.innerHTML = '<option>Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
+  const filtered = data.filter(d => d.Distribution === selectedDist);
+  const uniqueRoutes = [...new Set(filtered.map(d => d.Route))];
+  routeSelect.innerHTML = '<option value="">Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
+  filterData();
 }
 
-function showTable() {
+function filterData() {
   const dist = document.getElementById('distributionSelect').value;
   const route = document.getElementById('routeSelect').value;
-  const filtered = data.filter(d => d.Distribution === dist && d.Route === route);
+  const day = document.getElementById('daySelect').value;
+  const search = document.getElementById('searchInput').value.toLowerCase();
+
+  const filtered = data.filter(d =>
+    (!dist || d.Distribution === dist) &&
+    (!route || d.Route === route) &&
+    d[day] == 1 &&
+    (!search || d.Outlet.toLowerCase().includes(search))
+  );
 
   const tbody = document.querySelector('#dataTable tbody');
-  tbody.innerHTML = filtered.map(row => `
-    <tr>
-      <td>${row.Outlet}</td>
-      <td>${row.Target}</td>
-      <td>${row.MTD_Sale}</td>
-      <td>${row.Remaining}</td>
-    </tr>`).join('');
+  tbody.innerHTML = filtered.map(row => {
+    const remainingClass = row.Remaining < 0 ? 'negative' : 'positive';
+    return `
+      <tr>
+        <td>${row.Outlet}</td>
+        <td>${row.Target}</td>
+        <td>${row.MTD_Sale}</td>
+        <td class="${remainingClass}">${row.Remaining}</td>
+      </tr>
+    `;
+  }).join('');
 }
-
-loadDistributions();
 </script>
 
 </body>
