@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Distribution Dashboard</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    select, table { margin-top: 10px; }
+    table, th, td { border: 1px solid black; border-collapse: collapse; padding: 5px; }
+  </style>
+</head>
+<body>
+
+<h2>Outlet Sales Viewer</h2>
+
+<label>Select Distribution:</label>
+<select id="distributionSelect" onchange="loadRoutes()"></select>
+
+<br>
+<label>Select Route:</label>
+<select id="routeSelect" onchange="showTable()"></select>
+
+<br><br>
+<table id="dataTable">
+  <thead>
+    <tr>
+      <th>Outlet Name</th><th>Target</th><th>MTD Sale</th><th>Remaining</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+const data = [
+  { Distribution: "DELIGHT DISTRIBUTOR GUJJAR", Route: "BEWAL", Outlet: "AHMED BAKERY", Target: 6, MTD_Sale: 0, Remaining: -6 },
+  { Distribution: "DELIGHT DISTRIBUTOR GUJJAR", Route: "BEWAL", Outlet: "WARIS KARYANA STORE", Target: 12, MTD_Sale: 0, Remaining: -12 },
+  { Distribution: "DELIGHT DISTRIBUTOR GUJJAR", Route: "SARWAR SHAHEED ROAD-2", Outlet: "ZAFAR GENERAL STORE", Target: 12, MTD_Sale: 6, Remaining: -6 }
+  // Add all data here
+];
+
+function loadDistributions() {
+  const uniqueDistributions = [...new Set(data.map(d => d.Distribution))];
+  const select = document.getElementById('distributionSelect');
+  select.innerHTML = '<option>Select</option>' + uniqueDistributions.map(d => `<option>${d}</option>`).join('');
+}
+
+function loadRoutes() {
+  const selectedDist = document.getElementById('distributionSelect').value;
+  const routeSelect = document.getElementById('routeSelect');
+  const filteredRoutes = data.filter(d => d.Distribution === selectedDist);
+  const uniqueRoutes = [...new Set(filteredRoutes.map(d => d.Route))];
+  routeSelect.innerHTML = '<option>Select</option>' + uniqueRoutes.map(r => `<option>${r}</option>`).join('');
+}
+
+function showTable() {
+  const dist = document.getElementById('distributionSelect').value;
+  const route = document.getElementById('routeSelect').value;
+  const filtered = data.filter(d => d.Distribution === dist && d.Route === route);
+
+  const tbody = document.querySelector('#dataTable tbody');
+  tbody.innerHTML = filtered.map(row => `
+    <tr>
+      <td>${row.Outlet}</td>
+      <td>${row.Target}</td>
+      <td>${row.MTD_Sale}</td>
+      <td>${row.Remaining}</td>
+    </tr>`).join('');
+}
+
+loadDistributions();
+</script>
+
+</body>
+</html>
